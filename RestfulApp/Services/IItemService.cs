@@ -9,5 +9,5 @@ public interface IItemService
     Task<bool> CreateItemAsync(Item item);
     Task<bool> UpdateItemAsync(Item itemToUpdate);
     Task<bool> DeleteItemAsync(Guid itemId);
-    Task<bool> UserOwnsItemAsync(Guid userId);
+    Task<bool> UserOwnsItemAsync(Guid itemId, string userId);
 }

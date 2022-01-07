@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using RestfulApp.Data;
 using RestfulApp.Installers;
 using RestfulApp.Options;
 
@@ -12,7 +14,9 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseMigrationsEndPoint();
+    using var serviceScope = app.Services.CreateScope();
+    var dataContext = serviceScope.ServiceProvider.GetRequiredService<DataContext>();
+    await dataContext.Database.MigrateAsync();
 }
 else
 {
@@ -37,4 +41,4 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.Run();
+await app.RunAsync();

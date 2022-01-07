@@ -55,13 +55,13 @@ public class ItemController : Controller
     [HttpPut(ApiRoutes.Items.Update)]
     public async Task<IActionResult> UpdateAsync([FromRoute] Guid itemId, [FromBody] UpdateItemRequest updateItemRequest)
     {
-        var
-
-        var item = new Item
+        if (!await _itemService.UserOwnsItemAsync(itemId, HttpContext.GetUserId()))
         {
-            Id = itemId,
-            Name = updateItemRequest.Name
-        };
+            return BadRequest(new { error = "You do not own this item." });
+        }
+
+        var item = await _itemService.GetItemByIdAsync(itemId);
+        item.Name = updateItemRequest.Name;
 
         return await _itemService.UpdateItemAsync(item) ? Ok(item) : NotFound();
     }
@@ -69,6 +69,11 @@ public class ItemController : Controller
     [HttpDelete(ApiRoutes.Items.Delete)]
     public async Task<IActionResult> DeleteAsync([FromRoute] Guid itemId)
     {
+        if (!await _itemService.UserOwnsItemAsync(itemId, HttpContext.GetUserId()))
+        {
+            return BadRequest(new { error = "You do not own this item." });
+        }
+
         return await _itemService.DeleteItemAsync(itemId) ? NoContent() : NotFound();
     }
 }

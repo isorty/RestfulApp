@@ -51,4 +51,12 @@ public class ItemService : IItemService
 
         return await _dataContext.SaveChangesAsync() > 0;
     }
+
+    public async Task<bool> UserOwnsItemAsync(Guid itemId, string userId)
+    {
+        return await _dataContext.Items
+            .AsNoTracking()
+            .AnyAsync(item => item.Id == itemId && 
+                              string.Equals(item.UserId, userId, StringComparison.OrdinalIgnoreCase));
+    }
 }
