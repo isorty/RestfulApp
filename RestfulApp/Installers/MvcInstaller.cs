@@ -14,7 +14,19 @@ public class MvcInstaller : IInstaller
         var jwtSettings = new JwtSettings();
         configuration.Bind(nameof(JwtSettings), jwtSettings);
 
+        var tokenValidationParameters = new TokenValidationParameters()
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings.Secret)),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            RequireExpirationTime = false,
+            ValidateLifetime = true,
+            //ClockSkew = TimeSpan.Zero
+        };
+
         services.AddSingleton(jwtSettings)
+                .AddSingleton(tokenValidationParameters)
                 .AddScoped<IIdentityService, IdentityService>()
                 .AddAuthentication(setup =>
                 {
@@ -25,15 +37,7 @@ public class MvcInstaller : IInstaller
                 .AddJwtBearer(setup =>
                 {
                     setup.SaveToken = true;
-                    setup.TokenValidationParameters = new TokenValidationParameters()
-                    {
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSettings.Secret)),
-                        ValidateIssuer = false,
-                        ValidateAudience = false,
-                        RequireExpirationTime = false,
-                        ValidateLifetime = true
-                    };
+                    setup.TokenValidationParameters = tokenValidationParameters;
                 }).Services
                 .AddSwaggerGen(setup =>
                 {

@@ -24,7 +24,7 @@ public static class InstallerExtensions
     /// </summary>
     /// <param name="type">Class type.</param>
     /// <param name="interfaceType">Interface type.</param>
-    public static bool IsInterfaceRealization(Type type, Type interfaceType) => 
+    private static bool IsInterfaceRealization(Type type, Type interfaceType) => 
         interfaceType.IsInterface && 
         !(type.IsInterface || type.IsAbstract) &&
         interfaceType.IsAssignableFrom(type);

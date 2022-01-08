@@ -28,7 +28,11 @@ public class IdentityController : Controller
             });
         }
 
-        return Ok(new AuthSuccessResponse { Token = authResponse.Token });
+        return Ok(new AuthSuccessResponse 
+        { 
+            Token = authResponse.Token,
+            RefreshToken = authResponse.RefreshToken
+        });
     }
 
     [HttpPost(ApiRoutes.Identity.Register)]
@@ -52,6 +56,30 @@ public class IdentityController : Controller
             });
         }
 
-        return Ok(new AuthSuccessResponse { Token = authResponse.Token });
+        return Ok(new AuthSuccessResponse 
+        { 
+            Token = authResponse.Token,
+            RefreshToken = authResponse.RefreshToken
+        });
+    }
+
+    [HttpPost(ApiRoutes.Identity.Refresh)]
+    public async Task<IActionResult> RefreshAsync([FromBody] RefreshTokenRequest refreshTokenRequest)
+    {
+        var authResponse = await _identityService.RefreshTokenAsync(refreshTokenRequest.Token, refreshTokenRequest.RefreshToken);
+
+        if (!authResponse.IsAuthenticated)
+        {
+            return BadRequest(new AuthFailedResponse
+            {
+                Errors = authResponse.Errors
+            });
+        }
+
+        return Ok(new AuthSuccessResponse
+        {
+            Token = authResponse.Token,
+            RefreshToken = authResponse.RefreshToken
+        });
     }
 }

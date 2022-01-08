@@ -11,4 +11,5 @@ public class DataContext : IdentityDbContext
     }
 
     public DbSet<Item> Items { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 }

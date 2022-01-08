@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using RestfulApp.Data;
 using RestfulApp.Domain;
 using RestfulApp.Options;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,11 +14,15 @@ public class IdentityService : IIdentityService
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly JwtSettings _jwtSettings;
+    private readonly TokenValidationParameters _tokenValidationParameters;
+    private readonly DataContext _dataContext;
 
-    public IdentityService(UserManager<IdentityUser> userManager, JwtSettings jwtSettings)
+    public IdentityService(UserManager<IdentityUser> userManager, JwtSettings jwtSettings, TokenValidationParameters tokenValidationParameters, DataContext dataContext)
     {
         _userManager = userManager;
         _jwtSettings = jwtSettings;
+        _tokenValidationParameters = tokenValidationParameters;
+        _dataContext = dataContext;
     }
 
     public async Task<AuthenticationResult> LoginAsync(string email, string password)
@@ -30,11 +36,11 @@ public class IdentityService : IIdentityService
 
         if (await _userManager.CheckPasswordAsync(user, password))
         {
-            return GenerateAuthenticationResult(user);
+            return await GenerateAuthenticationResultAsync(user);
         }
 
         return new() { Errors = new[] { "User/password combination is wrong." } };
-    }
+    }    
 
     public async Task<AuthenticationResult> RegisterAsync(string email, string password)
     {
@@ -58,10 +64,97 @@ public class IdentityService : IIdentityService
             return new() { Errors = createdUser.Errors.Select(e => e.Description) };
         }
 
-        return GenerateAuthenticationResult(newUser);
+        return await GenerateAuthenticationResultAsync(newUser);
     }
 
-    private AuthenticationResult GenerateAuthenticationResult(IdentityUser user)
+    public async Task<AuthenticationResult> RefreshTokenAsync(string token, string refreshToken)
+    {
+        var claimsPrincipal = GetPrincipal(token);
+
+        if (claimsPrincipal is null)
+        {
+            return new() { Errors = new[] { "Invalid token." } };
+        }
+
+        var expiredOnUnix = long.Parse(claimsPrincipal.Claims.Single(claim => claim.Type.Equals(JwtRegisteredClaimNames.Exp)).Value);
+        var expiredOnUtc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            .AddSeconds(expiredOnUnix);
+
+        if (_jwtSettings.IsEarlyRefreshDenied && expiredOnUtc > DateTime.UtcNow)
+        {
+            return new() { Errors = new[] { "Token has not expired yet." } };
+        }
+
+        var jti = claimsPrincipal.Claims.Single(claim => claim.Type.Equals(JwtRegisteredClaimNames.Jti)).Value;
+
+        var storedRefreshToken = await _dataContext.RefreshTokens
+            .SingleOrDefaultAsync(rt => rt.Token.Equals(refreshToken));
+
+        if (storedRefreshToken is null)
+        {
+            return new() { Errors = new[] { "This refresh token does not exist." } };
+        }
+
+        if (DateTime.UtcNow > storedRefreshToken.ExpiredOn)
+        {
+            return new() { Errors = new[] { "This refresh token has expired." } };
+        }
+
+        if (storedRefreshToken.Invalidated)
+        {
+            return new() { Errors = new[] { "This refresh token has been invalidated." } };
+        }
+
+        if (storedRefreshToken.Used)
+        {
+            return new() { Errors = new[] { "This refresh token has been used." } };
+        }
+
+        if (!storedRefreshToken.JwtId.Equals(jti))
+        {
+            return new() { Errors = new[] { "This refresh token does not match this JWT." } };
+        }
+
+        storedRefreshToken.Used = true;
+
+        _dataContext.RefreshTokens.Update(storedRefreshToken);
+        await _dataContext.SaveChangesAsync();
+
+        var user = await _userManager.FindByIdAsync(claimsPrincipal.Claims.Single(claim => claim.Type.Equals("id")).Value);
+
+        return await GenerateAuthenticationResultAsync(user);
+    }
+
+    private ClaimsPrincipal GetPrincipal(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+
+        try
+        {
+            var tokenValidationParameters = _tokenValidationParameters.Clone();
+            tokenValidationParameters.ValidateLifetime = false;
+
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var validatedToken);
+            if (!IsJwtWithValidSecurityAlgorithm(validatedToken))
+            {
+                return null;
+            }
+
+            return principal;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken)
+    {
+        return (validatedToken is JwtSecurityToken jwtSecurityToken) &&
+                jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    private async Task<AuthenticationResult> GenerateAuthenticationResultAsync(IdentityUser user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_jwtSettings.Secret);
@@ -75,16 +168,28 @@ public class IdentityService : IIdentityService
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("id", user.Id)
             }),
-            Expires = DateTime.UtcNow.AddHours(2),
+            Expires = DateTime.UtcNow.Add(_jwtSettings.TokenLifetime),
             SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
 
+        var refreshToken = new RefreshToken
+        {
+            JwtId = token.Id,
+            UserId = user.Id,
+            CreationDate = DateTime.UtcNow,
+            ExpiredOn = DateTime.UtcNow.Add(_jwtSettings.RefreshTokenLifeTime)
+        };
+
+        await _dataContext.RefreshTokens.AddAsync(refreshToken);
+        await _dataContext.SaveChangesAsync();
+
         return new()
         {
             IsAuthenticated = true,
-            Token = tokenHandler.WriteToken(token)
+            Token = tokenHandler.WriteToken(token),
+            RefreshToken = refreshToken.Token
         };
     }
 }
