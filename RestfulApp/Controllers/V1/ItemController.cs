@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestfulApp.Contracts.V1;
@@ -14,16 +15,18 @@ namespace RestfulApp.Controllers.V1;
 public class ItemController : Controller
 {
     private readonly IItemService _itemService;
+    private readonly IMapper _mapper;
 
-    public ItemController(IItemService itemService)
+    public ItemController(IItemService itemService, IMapper mapper)
     {
         _itemService = itemService;
+        _mapper = mapper;
     }
 
     [HttpGet(ApiRoutes.Items.GetAll)]
     public async Task<IActionResult> GetAllAsync()
     {
-        return Ok(await _itemService.GetItemsAsync());
+        return Ok(_mapper.Map<List<ItemResponse>>(await _itemService.GetItemsAsync()));
     }
 
     [HttpGet(ApiRoutes.Items.Get)]
@@ -31,25 +34,31 @@ public class ItemController : Controller
     {
         var item = await _itemService.GetItemByIdAsync(itemId);
 
-        return item is not null ? Ok(item) : NotFound();
+        return item is not null ? Ok(_mapper.Map<ItemResponse>(item)) : NotFound();
     }
 
     [HttpPost(ApiRoutes.Items.Create)]
     public async Task<IActionResult> CreateAsync([FromBody] CreateItemRequest itemRequest)
     {
+        if (ModelState.IsInvalid())
+        {
+
+        }
+
+        var newItemId = Guid.NewGuid();
+
         var item = new Item
         { 
+            Id = newItemId,
             Name = itemRequest.Name,
             UserId = HttpContext.GetUserId()
         };
 
-        await _itemService.CreateItemAsync(item);
+        var created = await _itemService.CreateItemAsync(item);
 
-        var locationUri = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}/{ApiRoutes.Items.Get.Replace("{itemId}", item.Id.ToString())}";
+        var locationUri = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}/{ApiRoutes.Items.Get.Replace("{itemId}", newItemId.ToString())}";
 
-        var response = new ItemResponse { Id = item.Id };
-
-        return Created(locationUri, response);
+        return created ? Created(locationUri, _mapper.Map<ItemResponse>(item)) : BadRequest();
     }
 
     [HttpPut(ApiRoutes.Items.Update)]
@@ -63,7 +72,7 @@ public class ItemController : Controller
         var item = await _itemService.GetItemByIdAsync(itemId);
         item.Name = updateItemRequest.Name;
 
-        return await _itemService.UpdateItemAsync(item) ? Ok(item) : NotFound();
+        return await _itemService.UpdateItemAsync(item) ? Ok(_mapper.Map<ItemResponse>(item)) : NotFound();
     }
 
     [HttpDelete(ApiRoutes.Items.Delete)]

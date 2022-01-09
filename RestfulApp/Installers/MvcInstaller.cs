@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using RestfulApp.Filters;
 using RestfulApp.Options;
 using RestfulApp.Services;
 using System.Text;
@@ -27,13 +29,18 @@ public class MvcInstaller : IInstaller
         services.AddSingleton(jwtSettings)
                 .AddSingleton(tokenValidationParameters)
                 .AddScoped<IIdentityService, IdentityService>()
-                .AddMvc(setup => setup.EnableEndpointRouting = false).Services
+                .AddMvc(setup =>
+                {
+                    setup.EnableEndpointRouting = false;
+                    setup.Filters.Add<ValidationFilter>();
+                })
+                .AddFluentValidation(setup => setup.RegisterValidatorsFromAssemblyContaining<Program>()).Services
                 .AddAuthentication(setup =>
                 {
                     setup.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                     setup.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
                     setup.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                })
+                })                
                 .AddJwtBearer(setup =>
                 {
                     setup.SaveToken = true;

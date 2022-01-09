@@ -1,4 +1,6 @@
-﻿namespace RestfulApp.Extensions;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+
+namespace RestfulApp.Extensions;
 
 public static class GeneralExtensions
 {
@@ -11,4 +13,6 @@ public static class GeneralExtensions
 
         return httpContext.User.Claims.Single(claim => claim.Type == "id").Value;
     }
+
+    public static bool IsInvalid(this ModelStateDictionary modelState) => !modelState.IsValid;
 }

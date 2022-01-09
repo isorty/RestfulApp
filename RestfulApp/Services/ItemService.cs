@@ -56,7 +56,8 @@ public class ItemService : IItemService
     {
         return await _dataContext.Items
             .AsNoTracking()
-            .AnyAsync(item => item.Id == itemId && 
-                              string.Equals(item.UserId, userId, StringComparison.OrdinalIgnoreCase));
+            .AnyAsync(item => 
+                item.Id == itemId && 
+                (string.Equals(item.UserId, userId) || string.IsNullOrEmpty(item.UserId)));
     }
 }

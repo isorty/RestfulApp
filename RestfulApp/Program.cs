@@ -12,6 +12,7 @@ public class Program
 
         // Add services to the container.
         builder.Services.InstallServicesInAssembly<Program>(configuration);
+        builder.Services.AddAutoMapper(typeof(Program));
 
         var app = builder.Build();
 
