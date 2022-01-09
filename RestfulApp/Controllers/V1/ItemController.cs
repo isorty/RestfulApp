@@ -7,13 +7,13 @@ using RestfulApp.Contracts.V1.Requests;
 using RestfulApp.Contracts.V1.Responses;
 using RestfulApp.Domain;
 using RestfulApp.Extensions;
+using RestfulApp.Filters;
 using RestfulApp.Services;
 
 namespace RestfulApp.Controllers.V1;
 
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 [Produces("application/json")]
-public class ItemController : Controller
+public class ItemController : ControllerBase
 {
     private readonly IItemService _itemService;
     private readonly IMapper _mapper;
@@ -28,7 +28,9 @@ public class ItemController : Controller
     /// Returns all the items.
     /// </summary>
     /// <response code="200">Successfully returned all the items.</response>
+    /// <response code="401">Unauthorized.</response>
     [HttpGet(ApiRoutes.Items.GetAll)]
+    [ApiKeyAuth]
     public async Task<IActionResult> GetAllAsync()
     {
         return Ok(_mapper.Map<List<ItemResponse>>(await _itemService.GetItemsAsync()));
@@ -50,6 +52,7 @@ public class ItemController : Controller
     [HttpPost(ApiRoutes.Items.Create)]
     [ProducesResponseType(typeof(ItemResponse), 201)]
     [ProducesResponseType(typeof(ErrorResponse), 400)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> CreateAsync([FromBody] CreateItemRequest itemRequest)
     {
         var newItemId = Guid.NewGuid();
@@ -71,6 +74,7 @@ public class ItemController : Controller
     }
 
     [HttpPut(ApiRoutes.Items.Update)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> UpdateAsync([FromRoute] Guid itemId, [FromBody] UpdateItemRequest updateItemRequest)
     {
         if (!await _itemService.UserOwnsItemAsync(itemId, HttpContext.GetUserId()))
@@ -85,6 +89,7 @@ public class ItemController : Controller
     }
 
     [HttpDelete(ApiRoutes.Items.Delete)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> DeleteAsync([FromRoute] Guid itemId)
     {
         if (!await _itemService.UserOwnsItemAsync(itemId, HttpContext.GetUserId()))

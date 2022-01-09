@@ -6,7 +6,7 @@ using RestfulApp.Services;
 
 namespace RestfulApp.Controllers.V1;
 
-public class IdentityController : Controller
+public class IdentityController : ControllerBase
 {
     private readonly IIdentityService _identityService;
 
