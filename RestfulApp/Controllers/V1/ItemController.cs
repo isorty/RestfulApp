@@ -12,6 +12,7 @@ using RestfulApp.Services;
 namespace RestfulApp.Controllers.V1;
 
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Produces("application/json")]
 public class ItemController : Controller
 {
     private readonly IItemService _itemService;
@@ -23,6 +24,10 @@ public class ItemController : Controller
         _mapper = mapper;
     }
 
+    /// <summary>
+    /// Returns all the items.
+    /// </summary>
+    /// <response code="200">Successfully returned all the items.</response>
     [HttpGet(ApiRoutes.Items.GetAll)]
     public async Task<IActionResult> GetAllAsync()
     {
@@ -37,14 +42,16 @@ public class ItemController : Controller
         return item is not null ? Ok(_mapper.Map<ItemResponse>(item)) : NotFound();
     }
 
+    /// <summary>
+    /// Creates a new item.
+    /// </summary>
+    /// <response code="201">Successfully created a new item.</response>
+    /// <response code="400">Validation error occurred.</response>
     [HttpPost(ApiRoutes.Items.Create)]
+    [ProducesResponseType(typeof(ItemResponse), 201)]
+    [ProducesResponseType(typeof(ErrorResponse), 400)]
     public async Task<IActionResult> CreateAsync([FromBody] CreateItemRequest itemRequest)
     {
-        if (ModelState.IsInvalid())
-        {
-
-        }
-
         var newItemId = Guid.NewGuid();
 
         var item = new Item
@@ -58,7 +65,9 @@ public class ItemController : Controller
 
         var locationUri = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}/{ApiRoutes.Items.Get.Replace("{itemId}", newItemId.ToString())}";
 
-        return created ? Created(locationUri, _mapper.Map<ItemResponse>(item)) : BadRequest();
+        return created ? 
+            Created(locationUri, _mapper.Map<ItemResponse>(item)) : 
+            BadRequest(new ErrorResponse { Errors = new() { new() { Message = "Unable to create item." } } });
     }
 
     [HttpPut(ApiRoutes.Items.Update)]

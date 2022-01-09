@@ -1,7 +1,6 @@
 ﻿using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using RestfulApp.Filters;
 using RestfulApp.Options;
 using RestfulApp.Services;
@@ -40,39 +39,11 @@ public class MvcInstaller : IInstaller
                     setup.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                     setup.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
                     setup.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                })                
+                })
                 .AddJwtBearer(setup =>
                 {
                     setup.SaveToken = true;
                     setup.TokenValidationParameters = tokenValidationParameters;
-                }).Services
-                .AddSwaggerGen(setup =>
-                {
-                    setup.SwaggerDoc("v1", new OpenApiInfo { Title = "Restful App", Version = "v1" }); 
-
-                    setup.AddSecurityDefinition("Bearer", new()
-                    {
-                        Description = "JWT auth using bearer scheme",
-                        Name = "Authorization",
-                        In = ParameterLocation.Header,
-                        Type = SecuritySchemeType.ApiKey,
-                        Scheme = "Bearer"
-                    });
-
-                    setup.AddSecurityRequirement(new()
-                    {
-                        {
-                            new()
-                            {
-                                Reference = new OpenApiReference()
-                                {
-                                    Id = "Bearer",
-                                    Type = ReferenceType.SecurityScheme                                    
-                                }
-                            },
-                            new List<string>()
-                        }
-                    });
-                });
+                });                
     }
 }
