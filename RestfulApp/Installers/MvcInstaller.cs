@@ -21,13 +21,13 @@ public class MvcInstaller : IInstaller
             ValidateIssuer = false,
             ValidateAudience = false,
             RequireExpirationTime = false,
-            ValidateLifetime = true,
-            //ClockSkew = TimeSpan.Zero
+            ValidateLifetime = true
         };
 
         services.AddSingleton(jwtSettings)
                 .AddSingleton(tokenValidationParameters)
                 .AddScoped<IIdentityService, IdentityService>()
+                .AddMvc(setup => setup.EnableEndpointRouting = false).Services
                 .AddAuthentication(setup =>
                 {
                     setup.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -42,11 +42,6 @@ public class MvcInstaller : IInstaller
                 .AddSwaggerGen(setup =>
                 {
                     setup.SwaggerDoc("v1", new OpenApiInfo { Title = "Restful App", Version = "v1" }); 
-
-                    var security = new Dictionary<string, IEnumerable<string>>()
-                    {
-                        {"Bearer", new string[0] }
-                    };
 
                     setup.AddSecurityDefinition("Bearer", new()
                     {
@@ -64,12 +59,9 @@ public class MvcInstaller : IInstaller
                             {
                                 Reference = new OpenApiReference()
                                 {
-                                    Type = ReferenceType.SecurityScheme,
-                                    Id = "Bearer"
-                                },
-                                Scheme = "oauth2",
-                                Name = "Bearer",
-                                In = ParameterLocation.Header
+                                    Id = "Bearer",
+                                    Type = ReferenceType.SecurityScheme                                    
+                                }
                             },
                             new List<string>()
                         }

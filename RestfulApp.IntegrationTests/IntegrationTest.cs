@@ -8,6 +8,7 @@ using RestfulApp.Contracts.V1;
 using RestfulApp.Contracts.V1.Requests;
 using RestfulApp.Contracts.V1.Responses;
 using RestfulApp.Data;
+using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -15,9 +16,10 @@ using System.Threading.Tasks;
 
 namespace RestfulApp.IntegrationTests;
 
-public class IntegrationTest
+public class IntegrationTest : IDisposable
 {
     protected readonly HttpClient TestClient;
+    private readonly IServiceProvider _serviceProvider;
 
     protected IntegrationTest()
     {
@@ -28,19 +30,21 @@ public class IntegrationTest
                 builder.ConfigureServices(services =>
                 {
                     services.RemoveAll(typeof(DbContextOptions<DataContext>));
-                    services.AddDbContext<DataContext>(setup =>
-                    {
-                        using var context = new DataContext(
-                            setup.As<DbContextOptionsBuilder<DataContext>>()
-                                 .UseInMemoryDatabase("TestRestfulAppDb")
-                                 .Options);
-                        context.Database.EnsureDeleted();
-                        context.Database.EnsureCreated();
-                    },
-                    optionsLifetime: ServiceLifetime.Singleton);
+                    services.AddDbContext<DataContext>(setup => setup.UseInMemoryDatabase("TestRestfulAppDb"));
                 });
             });
+
+        _serviceProvider = appFactory.Services;
         TestClient = appFactory.CreateClient();
+    }
+
+    public void Dispose()
+    {
+        using var serviceScope = _serviceProvider.CreateScope();
+        serviceScope.ServiceProvider
+            .GetService<DataContext>()
+            .Database
+            .EnsureDeleted();
     }
 
     protected async Task<AuthSuccessResponse> AuthenticateAsync()
