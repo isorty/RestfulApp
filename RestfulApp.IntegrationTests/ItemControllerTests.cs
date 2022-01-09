@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Json;
-using System.Security.Permissions;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -15,13 +14,28 @@ namespace RestfulApp.IntegrationTests;
 public class ItemControllerTests : IntegrationTest
 {
     [Fact]
+    public async Task Returns_Token_When_Register_New_User()
+    {
+        //Arrange
+
+
+        //Act
+        var authResponse = await AuthenticateAsync();
+
+        //Assert
+        authResponse.Should().NotBeNull();
+        authResponse.Token.Should().NotBeNull();
+    }
+
+    [Fact]
     public async Task GetAllAsync_WithoutAnyItems_ReturnsEmpty()
     {
         //Arange
-        await AuthenticateAsync();
+        _ = await AuthenticateAsync();
+        var requestUri = ApiRoutes.Items.GetAll;
 
         //Act
-        var response = await TestClient.GetAsync(ApiRoutes.Items.GetAll);
+        var response = await TestClient.GetAsync(requestUri);
 
         //Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -31,12 +45,14 @@ public class ItemControllerTests : IntegrationTest
     [Fact]
     public async Task GetAsync_ReturnsItem_WhenItemExistsInDb()
     {
-        //Arrange
-        await AuthenticateAsync();
+        //Arrange        
+        _ = await AuthenticateAsync();
         var guid = Guid.NewGuid().ToString();
         var createdItem = await CreateItemAsync(new CreateItemRequest { Name = guid });
+        var requestUri = ApiRoutes.Items.Get.Replace("{itemId}", createdItem.Id.ToString());
+
         //Act
-        var response = await TestClient.GetAsync(ApiRoutes.Items.Get.Replace("{itemId}", createdItem.Id.ToString()));
+        var response = await TestClient.GetAsync(requestUri);
 
         //Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);

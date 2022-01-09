@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using FluentAssertions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,16 +30,24 @@ public class IntegrationTest
                     services.RemoveAll(typeof(DbContextOptions<DataContext>));
                     services.AddDbContext<DataContext>(setup =>
                     {
-                        setup.UseInMemoryDatabase("TestRestfulAppDb");
-                    });
+                        using var context = new DataContext(
+                            setup.As<DbContextOptionsBuilder<DataContext>>()
+                                 .UseInMemoryDatabase("TestRestfulAppDb")
+                                 .Options);
+                        context.Database.EnsureDeleted();
+                        context.Database.EnsureCreated();
+                    },
+                    optionsLifetime: ServiceLifetime.Singleton);
                 });
             });
         TestClient = appFactory.CreateClient();
     }
 
-    protected async Task AuthenticateAsync()
+    protected async Task<AuthSuccessResponse> AuthenticateAsync()
     {
-        TestClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await GetJwtAsync());
+        var authResponse = await GetJwtAsync();
+        TestClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse.Token);
+        return authResponse;
     }
 
     protected async Task<ItemResponse> CreateItemAsync(CreateItemRequest request)
@@ -47,7 +56,7 @@ public class IntegrationTest
         return await response.Content.ReadFromJsonAsync<ItemResponse>();
     }
 
-    private async Task<string> GetJwtAsync()
+    private async Task<AuthSuccessResponse> GetJwtAsync()
     {
         var response = await TestClient.PostAsJsonAsync(
             ApiRoutes.Identity.Register, 
@@ -59,6 +68,6 @@ public class IntegrationTest
 
         var registrationResponse = await response.Content.ReadFromJsonAsync<AuthSuccessResponse>();
 
-        return registrationResponse.Token;
+        return registrationResponse;
     }
 }

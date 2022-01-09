@@ -6,9 +6,7 @@ namespace RestfulApp.Data;
 public class DataContext : IdentityDbContext
 {
     public DataContext(DbContextOptions<DataContext> options)
-        : base(options)
-    {
-    }
+        : base(options) { }
 
     public DbSet<Item> Items { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
