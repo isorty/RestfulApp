@@ -1,4 +1,5 @@
 ﻿using Refit;
+using RestfulApp.Contracts.V1;
 using RestfulApp.Contracts.V1.Requests;
 using RestfulApp.Contracts.V1.Responses;
 
@@ -6,12 +7,12 @@ namespace RestfulApp.Sdk;
 
 public interface IIdentityApi
 {
-    [Post("/api/v1/identity/register")]
+    [Post($"/{ApiRoutes.Identity.Register}")]
     Task<ApiResponse<AuthSuccessResponse>> RegisterAsync([Body] UserRegistrationRequest userRegistrationRequest);
 
-    [Post("/api/v1/identity/login")]
+    [Post($"/{ApiRoutes.Identity.Login}")]
     Task<ApiResponse<AuthSuccessResponse>> LoginAsync([Body] UserLoginRequest userLoginRequest);
 
-    [Post("/api/v1/identity/refresh")]
+    [Post($"/{ApiRoutes.Identity.Refresh}")]
     Task<ApiResponse<AuthSuccessResponse>> RefreshAsync([Body] RefreshTokenRequest refreshTokenRequest);
 }
