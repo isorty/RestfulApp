@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using RestfulApp.Data;
 using RestfulApp.Installers;
-using RestfulApp.Options;
+using RestfulApp.Settings;
 
 public class Program
 {

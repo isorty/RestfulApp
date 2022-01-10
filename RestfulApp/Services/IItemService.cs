@@ -4,7 +4,7 @@ namespace RestfulApp.Services;
 
 public interface IItemService
 {
-    Task<List<Item>> GetItemsAsync();
+    Task<List<Item>> GetItemsAsync(PaginationFilter paginationFilter = null);
     Task<Item> GetItemByIdAsync(Guid itemId);
     Task<bool> CreateItemAsync(Item item);
     Task<bool> UpdateItemAsync(Item itemToUpdate);

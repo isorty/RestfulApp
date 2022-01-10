@@ -1,4 +1,4 @@
-﻿namespace RestfulApp.Options;
+﻿namespace RestfulApp.Settings;
 
 public class SwaggerOptions
 {

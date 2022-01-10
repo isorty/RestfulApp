@@ -1,6 +1,6 @@
-﻿namespace RestfulApp.Options;
+﻿namespace RestfulApp.Settings;
 
-public class JwtSettings
+public class JwtOptions
 {
     public string Secret { get; set; }
     public TimeSpan TokenLifetime { get; set; }

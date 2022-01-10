@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RestfulApp.Data;
+using RestfulApp.Data.Models;
 using RestfulApp.Domain;
-using RestfulApp.Options;
+using RestfulApp.Settings;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -14,15 +16,15 @@ public class IdentityService : IIdentityService
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly JwtSettings _jwtSettings;
-    private readonly TokenValidationParameters _tokenValidationParameters;
     private readonly DataContext _dataContext;
+    private readonly IMapper _mapper;
 
-    public IdentityService(UserManager<IdentityUser> userManager, JwtSettings jwtSettings, TokenValidationParameters tokenValidationParameters, DataContext dataContext)
+    public IdentityService(UserManager<IdentityUser> userManager, JwtSettings jwtSettings, DataContext dataContext, IMapper mapper)
     {
         _userManager = userManager;
         _jwtSettings = jwtSettings;
-        _tokenValidationParameters = tokenValidationParameters;
         _dataContext = dataContext;
+        _mapper = mapper;
     }
 
     public async Task<AuthenticationResult> LoginAsync(string email, string password)
@@ -80,7 +82,7 @@ public class IdentityService : IIdentityService
         var expiredOnUtc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
             .AddSeconds(expiredOnUnix);
 
-        if (_jwtSettings.IsEarlyRefreshDenied && expiredOnUtc > DateTime.UtcNow)
+        if (_jwtSettings.JwtOptions.IsEarlyRefreshDenied && expiredOnUtc > DateTime.UtcNow)
         {
             return new() { Errors = new[] { "Token has not expired yet." } };
         }
@@ -131,7 +133,7 @@ public class IdentityService : IIdentityService
 
         try
         {
-            var tokenValidationParameters = _tokenValidationParameters.Clone();
+            var tokenValidationParameters = _jwtSettings.TokenValidationParameters.Clone();
             tokenValidationParameters.ValidateLifetime = false;
 
             var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var validatedToken);
@@ -157,7 +159,7 @@ public class IdentityService : IIdentityService
     private async Task<AuthenticationResult> GenerateAuthenticationResultAsync(IdentityUser user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_jwtSettings.Secret);
+        var key = Encoding.ASCII.GetBytes(_jwtSettings.JwtOptions.Secret);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
@@ -168,7 +170,7 @@ public class IdentityService : IIdentityService
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("id", user.Id)
             }),
-            Expires = DateTime.UtcNow.Add(_jwtSettings.TokenLifetime),
+            Expires = DateTime.UtcNow.Add(_jwtSettings.JwtOptions.TokenLifetime),
             SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
 
@@ -179,10 +181,12 @@ public class IdentityService : IIdentityService
             JwtId = token.Id,
             UserId = user.Id,
             CreationDate = DateTime.UtcNow,
-            ExpiredOn = DateTime.UtcNow.Add(_jwtSettings.RefreshTokenLifeTime)
+            ExpiredOn = DateTime.UtcNow.Add(_jwtSettings.JwtOptions.RefreshTokenLifeTime)
         };
 
-        await _dataContext.RefreshTokens.AddAsync(refreshToken);
+        var refreshTokenDto = _mapper.Map<RefreshTokenDto>(refreshToken);
+
+        await _dataContext.RefreshTokens.AddAsync(refreshTokenDto);
         await _dataContext.SaveChangesAsync();
 
         return new()

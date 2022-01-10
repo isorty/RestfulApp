@@ -7,24 +7,36 @@ namespace RestfulApp.Filters;
 public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
 {
     private const string ApiKeyHeaderName = "X-API-KEY";
+    private bool _isEnabled = true;
+
+    public ApiKeyAuthAttribute() { }
+
+    public ApiKeyAuthAttribute(bool isEnabled)
+    {
+        _isEnabled = isEnabled;
+    }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        if (!context.HttpContext.Request.Headers.TryGetValue(ApiKeyHeaderName, out var potentialApiKey))
-        {
-            context.Result = new UnauthorizedResult();
-            return;
-        }
-
-        var configuration = context.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
-        var apiKey = configuration.GetValue<string>(ApiKeyHeaderName);
-
-        if (!apiKey.Equals(potentialApiKey, StringComparison.InvariantCultureIgnoreCase))
+        if (_isEnabled && !IsAuthorized(context))
         {
             context.Result = new UnauthorizedResult();
             return;
         }
 
         await next();
+    }
+
+    private bool IsAuthorized(ActionExecutingContext context)
+    {
+        if (!context.HttpContext.Request.Headers.TryGetValue(ApiKeyHeaderName, out var potentialApiKey))
+        {
+            return false;
+        }
+
+        var configuration = context.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
+        var apiKey = configuration.GetValue<string>(ApiKeyHeaderName);
+
+        return apiKey.Equals(potentialApiKey, StringComparison.InvariantCultureIgnoreCase);
     }
 }
