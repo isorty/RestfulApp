@@ -15,7 +15,14 @@ public class IdentityController : ControllerBase
         _identityService = identityService;
     }
 
+    /// <summary>
+    /// Logins a user by its email and passowrd.
+    /// </summary>
+    /// <response code="200">Login succeed.</response>
+    /// <response code="400">Login failed.</response>
     [HttpPost(ApiRoutes.Identity.Login)]
+    [ProducesResponseType(typeof(AuthSuccessResponse), 200)]
+    [ProducesResponseType(typeof(AuthFailedResponse), 400)]
     public async Task<IActionResult> LoginAsync([FromBody] UserLoginRequest userLoginRequest)
     {
         var authResponse = await _identityService.LoginAsync(userLoginRequest.Email, userLoginRequest.Password);
@@ -35,7 +42,14 @@ public class IdentityController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Registers a new user with email and password.
+    /// </summary>
+    /// <response code="200">Registration succeed.</response>
+    /// <response code="400">Registration failed.</response>
     [HttpPost(ApiRoutes.Identity.Register)]
+    [ProducesResponseType(typeof(AuthSuccessResponse), 200)]
+    [ProducesResponseType(typeof(AuthFailedResponse), 400)]
     public async Task<IActionResult> RegisterAsync([FromBody] UserRegistrationRequest userRegistrationRequest)
     {
         if (!ModelState.IsValid)
@@ -63,7 +77,14 @@ public class IdentityController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Returns a new token.
+    /// </summary>
+    /// <response code="200">Refreshing token succeed.</response>
+    /// <response code="400">Refreshing token failed.</response>
     [HttpPost(ApiRoutes.Identity.Refresh)]
+    [ProducesResponseType(typeof(AuthSuccessResponse), 200)]
+    [ProducesResponseType(typeof(AuthFailedResponse), 400)]
     public async Task<IActionResult> RefreshAsync([FromBody] RefreshTokenRequest refreshTokenRequest)
     {
         var authResponse = await _identityService.RefreshTokenAsync(refreshTokenRequest.Token, refreshTokenRequest.RefreshToken);
