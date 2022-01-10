@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using RestfulApp.Contracts.V1.Requests;
 
-namespace RestfulApp.Validators;
+namespace RestfulApp.Validation.Validators;
 
 public class CreateItemRequestValidator : AbstractValidator<CreateItemRequest>
 {

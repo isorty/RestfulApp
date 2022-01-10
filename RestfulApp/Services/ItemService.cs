@@ -17,24 +17,27 @@ public class ItemService : IItemService
         _mapper = mapper;
     }
 
-    public async Task<List<Item>> GetItemsAsync(PaginationFilter paginationFilter = null)
+    public async Task<List<Item>> GetItemsAsync(GetAllItemsFilter filter = null, PaginationFilter paginationFilter = null)
     {
+        var queryable = _dataContext.Items.AsQueryable();
+
+        queryable = AddFiltersOnQuery(filter, queryable);
+
         if (paginationFilter is null)
         {
-            return _mapper.Map<List<Item>>(await _dataContext.Items.ToListAsync());
-        }            
+            return _mapper.Map<List<Item>>(queryable.ToListAsync());
+        }
 
         var skipCount = (paginationFilter.PageNumber - 1) * paginationFilter.PageSize;
 
-        var itemDtos = await _dataContext.Items
-            .Skip(skipCount)
-            .Take(paginationFilter.PageSize)
-            .ToListAsync();
+        var itemDtos = await queryable.Skip(skipCount)
+                                      .Take(paginationFilter.PageSize)
+                                      .ToListAsync();
 
         var items = _mapper.Map<List<Item>>(itemDtos);
 
         return items;
-    }
+    }    
 
     public async Task<Item> GetItemByIdAsync(Guid itemId)
     {
@@ -88,5 +91,15 @@ public class ItemService : IItemService
             .AnyAsync(item => 
                 item.Id == itemId && 
                 (string.Equals(item.UserId, userId) || string.IsNullOrEmpty(item.UserId)));
+    }
+
+    private IQueryable<ItemDto> AddFiltersOnQuery(GetAllItemsFilter filter, IQueryable<ItemDto> queryable)
+    {
+        if (!string.IsNullOrEmpty(filter?.Name))
+        {
+            queryable = queryable.Where(item => item.Name.ToLower().Contains(filter.Name.ToLower()));
+        }
+
+        return queryable;
     }
 }

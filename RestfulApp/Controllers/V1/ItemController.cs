@@ -35,34 +35,45 @@ public class ItemController : ControllerBase
     /// <response code="401">Unauthorized.</response>
     [HttpGet(ApiRoutes.Items.GetAll)]
     [ApiKeyAuth(false)]
-    public async Task<IActionResult> GetAllAsync([FromQuery] PaginationQuery paginationQuery)
+    [ProducesResponseType(typeof(PaginatedResponse<ItemResponse>), 200)]
+    public async Task<IActionResult> GetAllAsync([FromQuery] GetAllItemsQuery query, [FromQuery] PaginationQuery paginationQuery)
     {
-        var paginationFiler = _mapper.Map<PaginationFilter>(paginationQuery);
+        var filter = _mapper.Map<GetAllItemsFilter>(query);
 
-        var items = await _itemService.GetItemsAsync(paginationFiler);
+        var pagination = _mapper.Map<PaginationFilter>(paginationQuery);
+
+        var items = await _itemService.GetItemsAsync(filter, pagination);
 
         var itemResponses = _mapper.Map<List<ItemResponse>>(items);
 
-        if (paginationFiler is null ||
-            paginationFiler.PageNumber < 1 ||
-            paginationFiler.PageSize < 1)
+        if (pagination is null ||
+            pagination.PageNumber < 1 ||
+            pagination.PageSize < 1)
         {
             return Ok(new PaginatedResponse<ItemResponse>(itemResponses));
         }
 
-        var paginatedResponse = PaginationHelpers.CreatePaginatedResponse(_uriService, paginationFiler, itemResponses);
+        var paginatedResponse = PaginationHelpers.CreatePaginatedResponse(_uriService, pagination, itemResponses);
 
         return Ok(paginatedResponse);
     }
 
+    /// <summary>
+    /// Returns an item by its id.
+    /// </summary>
+    /// <response code="200">Successfully returned an item by its id.</response>
+    /// <response code="404">An item with given id was not found.</response>
     [HttpGet(ApiRoutes.Items.Get)]
+    [ProducesResponseType(typeof(Response<ItemResponse>), 200)]
     public async Task<IActionResult> GetAsync([FromRoute] Guid itemId)
     {
         var item = await _itemService.GetItemByIdAsync(itemId);
         var itemResponse = _mapper.Map<ItemResponse>(item);
         var response = new Response<ItemResponse>(itemResponse);
 
-        return item is not null ? Ok(response) : NotFound();
+        return item is not null ? 
+            Ok(response) : 
+            NotFound();
     }
 
     /// <summary>
@@ -71,9 +82,9 @@ public class ItemController : ControllerBase
     /// <response code="201">Successfully created a new item.</response>
     /// <response code="400">Validation error occurred.</response>
     [HttpPost(ApiRoutes.Items.Create)]
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ProducesResponseType(typeof(Response<ItemResponse>), 201)]
-    [ProducesResponseType(typeof(ErrorResponse), 400)]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [ProducesResponseType(typeof(ValidationErrorResponse), 400)]    
     public async Task<IActionResult> CreateAsync([FromBody] CreateItemRequest itemRequest)
     {
         var newItemId = Guid.NewGuid();
@@ -89,7 +100,7 @@ public class ItemController : ControllerBase
 
         if (!created)
         {
-            return BadRequest(new ErrorResponse { Errors = new() { new() { Message = "Unable to create item." } } });
+            return BadRequest(new ValidationErrorResponse { Errors = new() { new() { Message = "Unable to create item." } } });
         }
 
         var locationUri = _uriService.GetItemUri(item.Id.ToString());
@@ -100,13 +111,21 @@ public class ItemController : ControllerBase
         return Created(locationUri, response);
     }
 
+    /// <summary>
+    /// Updates an item by its id.
+    /// </summary>
+    /// <response code="200">Successfully updated an item by its id.</response>
+    /// <response code="400">Validation error occurred.</response>
+    /// <response code="404">An item with given id was not found.</response>
     [HttpPut(ApiRoutes.Items.Update)]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [ProducesResponseType(typeof(Response<ItemResponse>), 200)]
+    [ProducesResponseType(typeof(ValidationErrorResponse), 400)]
     public async Task<IActionResult> UpdateAsync([FromRoute] Guid itemId, [FromBody] UpdateItemRequest updateItemRequest)
     {
         if (!await _itemService.UserOwnsItemAsync(itemId, HttpContext.GetUserId()))
         {
-            return BadRequest(new { error = "You do not own this item." });
+            return NotFound(new ValidationErrorResponse { Errors = new() { new() { Message = "An item not found." } } });
         }
 
         var item = await _itemService.GetItemByIdAsync(itemId);
@@ -115,18 +134,27 @@ public class ItemController : ControllerBase
         var itemResponse = _mapper.Map<ItemResponse>(item);
         var response = new Response<ItemResponse>(itemResponse);
 
-        return await _itemService.UpdateItemAsync(item) ? Ok(response) : NotFound();
+        return await _itemService.UpdateItemAsync(item) ? 
+            Ok(response) : 
+            NotFound();
     }
 
+    /// <summary>
+    /// Deletes an item by its id.
+    /// </summary>
+    /// <response code="204">Successfully deleted an item by its id.</response>
+    /// <response code="404">An item with given id was not found.</response>
     [HttpDelete(ApiRoutes.Items.Delete)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> DeleteAsync([FromRoute] Guid itemId)
     {
         if (!await _itemService.UserOwnsItemAsync(itemId, HttpContext.GetUserId()))
         {
-            return BadRequest(new { error = "You do not own this item." });
+            return NotFound(new ValidationErrorResponse { Errors = new() { new() { Message = "An item not found." } } });
         }
 
-        return await _itemService.DeleteItemAsync(itemId) ? NoContent() : NotFound();
+        return await _itemService.DeleteItemAsync(itemId) ? 
+            NoContent() :
+            NotFound();        
     }
 }

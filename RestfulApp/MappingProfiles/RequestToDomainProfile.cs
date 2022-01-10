@@ -8,6 +8,7 @@ public class RequestToDomainProfile : Profile
 {
     public RequestToDomainProfile()
     {
-        CreateMap<PaginationQuery, PaginationFilter>();
+        CreateMap<GetAllItemsQuery, GetAllItemsFilter>();
+        CreateMap<PaginationQuery, PaginationFilter>();        
     }
 }

@@ -15,4 +15,19 @@ public static class GeneralExtensions
     }
 
     public static bool IsInvalid(this ModelStateDictionary modelState) => !modelState.IsValid;
+
+    public static string ToLowerCamelCase(this string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
+        if (value.Length == 1)
+        {
+            return value.ToLower();
+        }
+
+        return value[0..1].ToLower() + value[1..];
+    }
 }

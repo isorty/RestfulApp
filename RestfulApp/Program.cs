@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using RestfulApp.Contracts.HealthChecks;
 using RestfulApp.Data;
 using RestfulApp.Installers;
 using RestfulApp.Settings;
@@ -27,6 +29,27 @@ public class Program
         {
             app.UseHsts();
         }
+
+        app.UseHealthChecks("/health", new HealthCheckOptions()
+        {
+            ResponseWriter = async (context, report) =>
+            {
+                context.Response.ContentType = "application/json";
+                var response = new HealthCheckResponse
+                {
+                    Status = report.Status.ToString(),
+                    Checks = report.Entries.Select(r => new HealthCheck
+                    {
+                        Component = r.Key,
+                        Status = r.Value.Status.ToString(),
+                        Description = r.Value.Description
+                    }),
+                    Duration = report.TotalDuration
+                };
+
+                await context.Response.WriteAsync(response.ToString());
+            }
+        });
 
         app.UseHttpsRedirection();
         app.UseStaticFiles();

@@ -1,10 +1,15 @@
-﻿namespace RestfulApp.Contracts.V1.Requests.Queries;
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace RestfulApp.Contracts.V1.Requests.Queries;
 
 public class PaginationQuery
 {
-    public const int MaxPageSize = 4000;
+    private const int MaxPageSize = 4000;
 
+    [FromQuery(Name = "pageNumber")]
     public int PageNumber { get; set; }
+
+    [FromQuery(Name = "pageSize")]
     public int PageSize { get; set; }
 
     public PaginationQuery()

@@ -2,8 +2,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using RestfulApp.Filters;
-using RestfulApp.Settings;
 using RestfulApp.Services;
+using RestfulApp.Settings;
+using RestfulApp.Validation.Options;
 using System.Text;
 
 namespace RestfulApp.Installers;
@@ -41,7 +42,11 @@ public class MvcInstaller : IInstaller
                     setup.EnableEndpointRouting = false;
                     setup.Filters.Add<ValidationFilter>();
                 })
-                .AddFluentValidation(setup => setup.RegisterValidatorsFromAssemblyContaining<Program>()).Services
+                .AddFluentValidation(setup =>
+                {
+                    setup.ValidatorOptions.PropertyNameResolver = LowerCamelCasePropertyNameResolver.ResolvePropertyName;
+                    setup.RegisterValidatorsFromAssemblyContaining<Program>();
+                }).Services
                 .AddAuthentication(setup =>
                 {
                     setup.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

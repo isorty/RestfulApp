@@ -15,13 +15,13 @@ public class ValidationFilter : IAsyncActionFilter
                 .Where(x => x.Value.Errors.Count > 0)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Errors.Select(x => x.ErrorMessage));
 
-            var errorResponse = new ErrorResponse();
+            var errorResponse = new ValidationErrorResponse();
 
             foreach (var error in errorsInModelState)
             {
                 foreach (var suberror in error.Value)
                 {
-                    var errorModel = new ErrorModel
+                    var errorModel = new ValidationErrorModel
                     {
                         FieldName = error.Key,
                         Message = suberror
