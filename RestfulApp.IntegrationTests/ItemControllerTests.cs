@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using RestfulApp.Contracts.V1;
 using RestfulApp.Contracts.V1.Requests;
+using RestfulApp.Contracts.V1.Responses;
 using RestfulApp.Domain;
 using System;
 using System.Collections.Generic;
@@ -39,7 +40,12 @@ public class ItemControllerTests : IntegrationTest
 
         //Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        (await response.Content.ReadFromJsonAsync<List<Item>>()).Should().BeEmpty();
+        var responseConent = await response.Content.ReadFromJsonAsync<PaginatedResponse<ItemResponse>>();
+        responseConent.Data.Should().BeEmpty();
+        responseConent.PageNumber.Should().Be(1);
+        responseConent.PageSize.Should().Be(4000);
+        responseConent.NextPage.Should().BeNull();
+        responseConent.PreviousPage.Should().BeNull();
     }
 
     [Fact]
@@ -47,17 +53,17 @@ public class ItemControllerTests : IntegrationTest
     {
         //Arrange        
         _ = await AuthenticateAsync();
-        var guid = Guid.NewGuid().ToString();
-        var createdItem = await CreateItemAsync(new CreateItemRequest { Name = guid });
-        var requestUri = ApiRoutes.Items.Get.Replace("{itemId}", createdItem.Id.ToString());
+        var name = "Test Name";
+        var createdItemResponse = await CreateItemAsync(new CreateItemRequest { Name = name });
+        var requestUri = ApiRoutes.Items.Get.Replace("{itemId}", createdItemResponse.Data.Id.ToString());
 
         //Act
         var response = await TestClient.GetAsync(requestUri);
 
         //Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var returnedItem = await response.Content.ReadFromJsonAsync<Item>();
-        returnedItem.Id.Should().Be(createdItem.Id);
-        returnedItem.Name.Should().Be(guid);
+        var returnedItemResponse = await response.Content.ReadFromJsonAsync<Response<ItemResponse>>();
+        returnedItemResponse.Data.Id.Should().Be(createdItemResponse.Data.Id);
+        returnedItemResponse.Data.Name.Should().Be(name);
     }
 }

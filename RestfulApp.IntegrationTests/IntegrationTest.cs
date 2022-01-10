@@ -53,10 +53,10 @@ public class IntegrationTest : IDisposable
         return authResponse;
     }
 
-    protected async Task<ItemResponse> CreateItemAsync(CreateItemRequest request)
+    protected async Task<Response<ItemResponse>> CreateItemAsync(CreateItemRequest request)
     {
         var response = await TestClient.PostAsJsonAsync(ApiRoutes.Items.Create, request);
-        return await response.Content.ReadFromJsonAsync<ItemResponse>();
+        return await response.Content.ReadFromJsonAsync<Response<ItemResponse>>();
     }
 
     private async Task<AuthSuccessResponse> GetJwtAsync()
