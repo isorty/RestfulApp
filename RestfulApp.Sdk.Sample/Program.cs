@@ -1,5 +1,6 @@
 ﻿using Refit;
 using RestfulApp.Contracts.V1.Requests;
+using RestfulApp.Contracts.V1.Requests.Queries;
 using RestfulApp.Sdk;
 using System.Text.Json;
 
@@ -29,26 +30,33 @@ var loginResponse = await identityApi.LoginAsync(new UserLoginRequest
 cachedToken = loginResponse.Content.Token;
 
 Console.WriteLine("All Items:");
-(await itemApi.GetAllAsync()).Content.ForEach(item => Console.WriteLine(ToJson(item)));
+var itemsResponse = await itemApi.GetAllAsync();
+Console.WriteLine(ToJson(itemsResponse.Content));
 Console.WriteLine();
 
-var createdItem = await itemApi.CreateAsync(new CreateItemRequest
+Console.WriteLine("All Items with pagination:");
+var paginationQuery = new PaginationQuery(2, 2);
+var paginatedItemsResponse = await itemApi.GetAllAsync(paginationQuery);
+Console.WriteLine(ToJson(paginatedItemsResponse.Content));
+Console.WriteLine();
+
+var createdItemResponse = await itemApi.CreateAsync(new CreateItemRequest
 {
     Name = "New sdk post"
 });
 
-var retrievedNewItem = await itemApi.GetAsync(createdItem.Content.Id);
+var retrievedNewItemResponse = await itemApi.GetAsync(createdItemResponse.Content.Data.Id);
 
 Console.WriteLine("Created item:");
-Console.WriteLine(ToJson(retrievedNewItem.Content));
+Console.WriteLine(ToJson(retrievedNewItemResponse.Content));
 Console.WriteLine();
 Console.WriteLine("All Items:");
-(await itemApi.GetAllAsync()).Content.ForEach(item => Console.WriteLine(ToJson(item)));
+Console.WriteLine(ToJson((await itemApi.GetAllAsync()).Content));
 Console.WriteLine();
 Console.WriteLine("Created item deleted.");
-_ = await itemApi.DeleteAsync(retrievedNewItem.Content.Id);
+_ = await itemApi.DeleteAsync(retrievedNewItemResponse.Content.Data.Id);
 Console.WriteLine("All Items:");
-(await itemApi.GetAllAsync()).Content.ForEach(item => Console.WriteLine(ToJson(item)));
+Console.WriteLine(ToJson((await itemApi.GetAllAsync()).Content));
 
 Console.ReadKey();
 static string ToJson(object o) => JsonSerializer.Serialize(o, new JsonSerializerOptions { WriteIndented = true });

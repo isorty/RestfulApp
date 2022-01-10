@@ -1,24 +1,30 @@
-﻿using Refit;
+﻿using Microsoft.Net.Http.Headers;
+using Refit;
+using RestfulApp.Contracts.V1;
 using RestfulApp.Contracts.V1.Requests;
+using RestfulApp.Contracts.V1.Requests.Queries;
 using RestfulApp.Contracts.V1.Responses;
 
 namespace RestfulApp.Sdk;
 
-[Headers("Authorization: Bearer")]
+[Headers($"{HeaderNames.Authorization} : Bearer")]
 public interface IItemApi
 {
-    [Get("/api/v1/items")]
-    Task<ApiResponse<List<ItemResponse>>> GetAllAsync();
+    [Get($"/{ApiRoutes.Items.GetAll}")]
+    Task<ApiResponse<PaginatedResponse<ItemResponse>>> GetAllAsync();
 
-    [Get("/api/v1/items/{itemId}")]
-    Task<ApiResponse<ItemResponse>> GetAsync(Guid itemId);
+    [Get($"/{ApiRoutes.Items.GetAll}")]
+    Task<ApiResponse<PaginatedResponse<ItemResponse>>> GetAllAsync([Query] PaginationQuery paginationQuery);
 
-    [Post("/api/v1/items")]
-    Task<ApiResponse<ItemResponse>> CreateAsync([Body] CreateItemRequest createItemRequest);
+    [Get($"/{ApiRoutes.Items.Get}")]
+    Task<ApiResponse<Response<ItemResponse>>> GetAsync(Guid itemId);
 
-    [Put("/api/v1/items/{itemId}")]
-    Task<ApiResponse<ItemResponse>> UpdateAsync(Guid itemId, [Body] UpdateItemRequest updateItemRequest);
+    [Post($"/{ApiRoutes.Items.Create}")]
+    Task<ApiResponse<Response<ItemResponse>>> CreateAsync([Body] CreateItemRequest createItemRequest);
 
-    [Delete("/api/v1/items/{itemId}")]
+    [Put($"/{ApiRoutes.Items.Update}")]
+    Task<ApiResponse<Response<ItemResponse>>> UpdateAsync(Guid itemId, [Body] UpdateItemRequest updateItemRequest);
+
+    [Delete($"/{ApiRoutes.Items.Delete}")]
     Task<ApiResponse<string>> DeleteAsync(Guid itemId);
 }
