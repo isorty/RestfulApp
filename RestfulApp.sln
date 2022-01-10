@@ -7,11 +7,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestfulApp", "RestfulApp\Re
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestfulApp.IntegrationTests", "RestfulApp.IntegrationTests\RestfulApp.IntegrationTests.csproj", "{133CE36F-EE17-45F6-9DF3-12753DD5697C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestfulApp.Sdk", "RestfulApp.Sdk\RestfulApp.Sdk.csproj", "{6EE877F2-55FA-4876-8123-74109796C1D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestfulApp.Sdk", "RestfulApp.Sdk\RestfulApp.Sdk.csproj", "{6EE877F2-55FA-4876-8123-74109796C1D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestfulApp.Sdk.Sample", "RestfulApp.Sdk.Sample\RestfulApp.Sdk.Sample.csproj", "{69740C38-4A86-49DC-943F-AC273241B39E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestfulApp.Sdk.Sample", "RestfulApp.Sdk.Sample\RestfulApp.Sdk.Sample.csproj", "{69740C38-4A86-49DC-943F-AC273241B39E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestfulApp.Contracts", "RestfulApp.Contracts\RestfulApp.Contracts.csproj", "{58E931B9-D2AB-4686-8C7A-D0E3C7AA06B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestfulApp.Contracts", "RestfulApp.Contracts\RestfulApp.Contracts.csproj", "{58E931B9-D2AB-4686-8C7A-D0E3C7AA06B9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7236B0C9-8D14-4257-A1CB-8EC8304F3B6F}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
