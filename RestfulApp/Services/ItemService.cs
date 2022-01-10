@@ -41,7 +41,9 @@ public class ItemService : IItemService
 
     public async Task<Item> GetItemByIdAsync(Guid itemId)
     {
-        var itemDto = await _dataContext.Items.SingleOrDefaultAsync(item => item.Id == itemId);
+        var itemDto = await _dataContext.Items
+            .AsNoTracking()
+            .SingleOrDefaultAsync(item => item.Id == itemId);
 
         return _mapper.Map<Item>(itemDto);
     }
@@ -55,33 +57,27 @@ public class ItemService : IItemService
         return await _dataContext.SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> UpdateItemAsync(Item itemToUpdate)
+    public async Task<Item> UpdateItemAsync(Item itemToUpdate)
     {
-        if (await GetItemByIdAsync(itemToUpdate.Id) is Item item)
-        {
-            var itemDto = _mapper.Map<ItemDto>(item);
+        if (await _dataContext.Items.AsNoTracking().SingleOrDefaultAsync(item => item.Id == itemToUpdate.Id) is ItemDto itemDto)
+        {            
+            itemDto = _mapper.Map(itemToUpdate, itemDto);
             _dataContext.Items.Update(itemDto);
-
-            return await _dataContext.SaveChangesAsync() > 0;
+            return await _dataContext.SaveChangesAsync() > 0 ? _mapper.Map<Item>(itemDto) : null;
         }
 
-        return false;
+        return null;
     }
 
     public async Task<bool> DeleteItemAsync(Guid itemId)
     {
-        var item = await GetItemByIdAsync(itemId);
-
-        if (item is null)
+        if (await _dataContext.Items.SingleOrDefaultAsync(item => item.Id == itemId) is ItemDto itemDto)
         {
-            return false;
+            _dataContext.Items.Remove(itemDto);
+            return await _dataContext.SaveChangesAsync() > 0;
         }
 
-        var itemDto = _mapper.Map<ItemDto>(item);
-
-        _dataContext.Items.Remove(itemDto);
-
-        return await _dataContext.SaveChangesAsync() > 0;
+        return false;        
     }
 
     public async Task<bool> UserOwnsItemAsync(Guid itemId, string userId)

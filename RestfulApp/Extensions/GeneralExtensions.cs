@@ -11,7 +11,9 @@ public static class GeneralExtensions
             return string.Empty;
         }
 
-        return httpContext.User.Claims.Single(claim => claim.Type == "id").Value;
+        var idClaim = httpContext.User.Claims.SingleOrDefault(claim => claim.Type == "id");
+
+        return idClaim is null ? string.Empty : idClaim.Value;
     }
 
     public static bool IsInvalid(this ModelStateDictionary modelState) => !modelState.IsValid;

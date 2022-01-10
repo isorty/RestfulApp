@@ -4,6 +4,7 @@ using RestfulApp.Contracts.HealthChecks;
 using RestfulApp.Data;
 using RestfulApp.Installers;
 using RestfulApp.Settings;
+using System.Net.Mime;
 
 public class Program
 {
@@ -34,7 +35,7 @@ public class Program
         {
             ResponseWriter = async (context, report) =>
             {
-                context.Response.ContentType = "application/json";
+                context.Response.ContentType = MediaTypeNames.Application.Json;
                 var response = new HealthCheckResponse
                 {
                     Status = report.Status.ToString(),
@@ -65,9 +66,14 @@ public class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.MapControllerRoute(
-            name: "default",
-            pattern: "{controller=Home}/{action=Index}/{id?}");
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+        });
+
+        //app.MapControllerRoute(
+        //    name: "default",
+        //    pattern: "{controller=Home}/{action=Index}/{id?}");
 
         await app.RunAsync();
     }

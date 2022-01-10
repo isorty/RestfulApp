@@ -1,5 +1,6 @@
 ﻿using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using RestfulApp.Filters;
 using RestfulApp.Services;
@@ -28,18 +29,18 @@ public class MvcInstaller : IInstaller
 
         var jwtSettings = new JwtSettings(jwtOptions, tokenValidationParameters);
 
-        services.AddSingleton(jwtSettings)
+        services.Configure<ApiBehaviorOptions>(setup => setup.SuppressModelStateInvalidFilter = true)
+                .AddSingleton(jwtSettings)
                 .AddScoped<IUriService>(setup =>
                 {
                     var accessor = setup.GetRequiredService<IHttpContextAccessor>();
                     var request = accessor.HttpContext.Request;
-                    var absoluteUri = $"{request.Scheme}://{request.Host}{request.Path}/";
+                    var absoluteUri = $"{request.Scheme}://{request.Host}{request.Path}";
                     return new UriService(absoluteUri);
                 })
                 .AddScoped<IIdentityService, IdentityService>()
-                .AddMvc(setup =>
+                .AddControllers(setup =>
                 {
-                    setup.EnableEndpointRouting = false;
                     setup.Filters.Add<ValidationFilter>();
                 })
                 .AddFluentValidation(setup =>

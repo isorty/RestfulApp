@@ -8,6 +8,10 @@ public class DtoToDomainProfile : Profile
 {
     public DtoToDomainProfile()
     {
-        CreateMap<ItemDto, Item>();
+        CreateMap<ItemDto, Item>()
+            .ReverseMap()
+            .ForMember(m => m.UserId, options => options.UseDestinationValue());
+
+        CreateMap<RefreshTokenDto, RefreshToken>().ReverseMap();
     }
 }

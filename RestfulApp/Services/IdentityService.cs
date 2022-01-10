@@ -189,11 +189,12 @@ public class IdentityService : IIdentityService
         await _dataContext.RefreshTokens.AddAsync(refreshTokenDto);
         await _dataContext.SaveChangesAsync();
 
+
         return new()
         {
             IsAuthenticated = true,
             Token = tokenHandler.WriteToken(token),
-            RefreshToken = refreshToken.Token
+            RefreshToken = refreshTokenDto.Token
         };
     }
 }

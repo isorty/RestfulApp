@@ -11,11 +11,12 @@ using RestfulApp.Extensions;
 using RestfulApp.Filters;
 using RestfulApp.Helpers;
 using RestfulApp.Services;
+using System.Net.Mime;
 
 namespace RestfulApp.Controllers.V1;
 
-[Produces("application/json")]
-public class ItemController : ControllerBase
+[Produces(MediaTypeNames.Application.Json)]
+public class ItemController : ApiController
 {
     private readonly IItemService _itemService;
     private readonly IMapper _mapper;
@@ -36,6 +37,7 @@ public class ItemController : ControllerBase
     [HttpGet(ApiRoutes.Items.GetAll)]
     [ApiKeyAuth(false)]
     [ProducesResponseType(typeof(PaginatedResponse<ItemResponse>), 200)]
+    [ProducesResponseType(typeof(ProblemDetails), 401)]
     public async Task<IActionResult> GetAllAsync([FromQuery] GetAllItemsQuery query, [FromQuery] PaginationQuery paginationQuery)
     {
         var filter = _mapper.Map<GetAllItemsFilter>(query);
@@ -65,7 +67,8 @@ public class ItemController : ControllerBase
     /// <response code="404">An item with given id was not found.</response>
     [HttpGet(ApiRoutes.Items.Get)]
     [ProducesResponseType(typeof(Response<ItemResponse>), 200)]
-    public async Task<IActionResult> GetAsync([FromRoute] Guid itemId)
+    [ProducesResponseType(typeof(ProblemDetails), 404)]
+    public async Task<IActionResult> GetAsync(Guid itemId)
     {
         var item = await _itemService.GetItemByIdAsync(itemId);
         var itemResponse = _mapper.Map<ItemResponse>(item);
@@ -82,25 +85,22 @@ public class ItemController : ControllerBase
     /// <response code="201">Successfully created a new item.</response>
     /// <response code="400">Validation error occurred.</response>
     [HttpPost(ApiRoutes.Items.Create)]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ProducesResponseType(typeof(Response<ItemResponse>), 201)]
     [ProducesResponseType(typeof(ValidationErrorResponse), 400)]    
-    public async Task<IActionResult> CreateAsync([FromBody] CreateItemRequest itemRequest)
+    public async Task<IActionResult> CreateAsync(CreateItemRequest itemRequest)
     {
         var newItemId = Guid.NewGuid();
 
-        var item = new Item
-        { 
-            Id = newItemId,
-            Name = itemRequest.Name,
-            UserId = HttpContext.GetUserId()
-        };
+        var item = _mapper.Map<Item>(itemRequest);
+        item.Id = newItemId;
+        item.UserId = HttpContext.GetUserId();
 
         var created = await _itemService.CreateItemAsync(item);
 
         if (!created)
         {
-            return BadRequest(new ValidationErrorResponse { Errors = new() { new() { Message = "Unable to create item." } } });
+            return BadRequest();
         }
 
         var locationUri = _uriService.GetItemUri(item.Id.ToString());
@@ -118,25 +118,30 @@ public class ItemController : ControllerBase
     /// <response code="400">Validation error occurred.</response>
     /// <response code="404">An item with given id was not found.</response>
     [HttpPut(ApiRoutes.Items.Update)]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ProducesResponseType(typeof(Response<ItemResponse>), 200)]
     [ProducesResponseType(typeof(ValidationErrorResponse), 400)]
-    public async Task<IActionResult> UpdateAsync([FromRoute] Guid itemId, [FromBody] UpdateItemRequest updateItemRequest)
+    [ProducesResponseType(typeof(ProblemDetails), 404)]
+    public async Task<IActionResult> UpdateAsync(Guid itemId, UpdateItemRequest updateItemRequest)
     {
         if (!await _itemService.UserOwnsItemAsync(itemId, HttpContext.GetUserId()))
         {
-            return NotFound(new ValidationErrorResponse { Errors = new() { new() { Message = "An item not found." } } });
+            return NotFound();
         }
 
-        var item = await _itemService.GetItemByIdAsync(itemId);
-        item.Name = updateItemRequest.Name;
+        var item = _mapper.Map<Item>(updateItemRequest);
+        item.Id = itemId;
 
-        var itemResponse = _mapper.Map<ItemResponse>(item);
-        var response = new Response<ItemResponse>(itemResponse);
+        var updatedItem = await _itemService.UpdateItemAsync(item);
 
-        return await _itemService.UpdateItemAsync(item) ? 
-            Ok(response) : 
-            NotFound();
+        if (updatedItem is null)
+        {
+            return NotFound();
+        }
+
+        var updatedItemRespone = _mapper.Map<ItemResponse>(updatedItem);
+
+        return Ok(new Response<ItemResponse> { Data = updatedItemRespone });
     }
 
     /// <summary>
@@ -146,11 +151,12 @@ public class ItemController : ControllerBase
     /// <response code="404">An item with given id was not found.</response>
     [HttpDelete(ApiRoutes.Items.Delete)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> DeleteAsync([FromRoute] Guid itemId)
+    [ProducesResponseType(typeof(ProblemDetails), 404)]
+    public async Task<IActionResult> DeleteAsync(Guid itemId)
     {
         if (!await _itemService.UserOwnsItemAsync(itemId, HttpContext.GetUserId()))
         {
-            return NotFound(new ValidationErrorResponse { Errors = new() { new() { Message = "An item not found." } } });
+            return NotFound();
         }
 
         return await _itemService.DeleteItemAsync(itemId) ? 

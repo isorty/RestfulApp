@@ -3,10 +3,12 @@ using RestfulApp.Contracts.V1;
 using RestfulApp.Contracts.V1.Requests;
 using RestfulApp.Contracts.V1.Responses;
 using RestfulApp.Services;
+using System.Net.Mime;
 
 namespace RestfulApp.Controllers.V1;
 
-public class IdentityController : ControllerBase
+[Produces(MediaTypeNames.Application.Json)]
+public class IdentityController : ApiController
 {
     private readonly IIdentityService _identityService;
 
@@ -23,7 +25,7 @@ public class IdentityController : ControllerBase
     [HttpPost(ApiRoutes.Identity.Login)]
     [ProducesResponseType(typeof(AuthSuccessResponse), 200)]
     [ProducesResponseType(typeof(AuthFailedResponse), 400)]
-    public async Task<IActionResult> LoginAsync([FromBody] UserLoginRequest userLoginRequest)
+    public async Task<IActionResult> LoginAsync(UserLoginRequest userLoginRequest)
     {
         var authResponse = await _identityService.LoginAsync(userLoginRequest.Email, userLoginRequest.Password);
 
@@ -50,7 +52,7 @@ public class IdentityController : ControllerBase
     [HttpPost(ApiRoutes.Identity.Register)]
     [ProducesResponseType(typeof(AuthSuccessResponse), 200)]
     [ProducesResponseType(typeof(AuthFailedResponse), 400)]
-    public async Task<IActionResult> RegisterAsync([FromBody] UserRegistrationRequest userRegistrationRequest)
+    public async Task<IActionResult> RegisterAsync(UserRegistrationRequest userRegistrationRequest)
     {
         if (!ModelState.IsValid)
         {
@@ -85,7 +87,7 @@ public class IdentityController : ControllerBase
     [HttpPost(ApiRoutes.Identity.Refresh)]
     [ProducesResponseType(typeof(AuthSuccessResponse), 200)]
     [ProducesResponseType(typeof(AuthFailedResponse), 400)]
-    public async Task<IActionResult> RefreshAsync([FromBody] RefreshTokenRequest refreshTokenRequest)
+    public async Task<IActionResult> RefreshAsync(RefreshTokenRequest refreshTokenRequest)
     {
         var authResponse = await _identityService.RefreshTokenAsync(refreshTokenRequest.Token, refreshTokenRequest.RefreshToken);
 
