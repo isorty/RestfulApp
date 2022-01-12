@@ -2,9 +2,7 @@
 using RestfulApp.Contracts.V1;
 using RestfulApp.Contracts.V1.Requests;
 using RestfulApp.Contracts.V1.Responses;
-using RestfulApp.Domain;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;

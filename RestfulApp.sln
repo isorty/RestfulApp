@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestfulApp", "RestfulApp\RestfulApp.csproj", "{105442EA-ADC8-4E42-A884-184619A0E128}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestfulApp.Api", "RestfulApp.Api\RestfulApp.Api.csproj", "{105442EA-ADC8-4E42-A884-184619A0E128}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestfulApp.IntegrationTests", "RestfulApp.IntegrationTests\RestfulApp.IntegrationTests.csproj", "{133CE36F-EE17-45F6-9DF3-12753DD5697C}"
 EndProject

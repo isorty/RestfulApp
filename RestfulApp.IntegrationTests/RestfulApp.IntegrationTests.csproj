@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RestfulApp\RestfulApp.csproj" />
+    <ProjectReference Include="..\RestfulApp.Api\RestfulApp.Api.csproj" />
   </ItemGroup>
 
 </Project>
