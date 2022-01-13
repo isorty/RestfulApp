@@ -2,9 +2,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RestfulApp.Api.Controllers;
 using RestfulApp.Api.Domain;
-using RestfulApp.Api.Extensions;
 using RestfulApp.Api.Helpers;
 using RestfulApp.Api.Services;
 using RestfulApp.Contracts.V1;
@@ -22,12 +20,14 @@ public class ItemController : ApiController
     private readonly IItemService _itemService;
     private readonly IMapper _mapper;
     private readonly IUriService _uriService;
+    private readonly IIdentityService _identityService;
 
-    public ItemController(IItemService itemService, IMapper mapper, IUriService uriService)
+    public ItemController(IItemService itemService, IMapper mapper, IUriService uriService, IIdentityService identityService)
     {
         _itemService = itemService;
         _mapper = mapper;
         _uriService = uriService;
+        _identityService = identityService;
     }
 
     /// <summary>
@@ -92,10 +92,11 @@ public class ItemController : ApiController
     public async Task<IActionResult> CreateAsync(CreateItemRequest itemRequest)
     {
         var newItemId = Guid.NewGuid();
+        var user = HttpContext.User;
 
         var item = _mapper.Map<Item>(itemRequest);
         item.Id = newItemId;
-        item.UserId = HttpContext.GetUserId();
+        item.UserId = _identityService.GetUserId();
 
         var created = await _itemService.CreateItemAsync(item);
 
@@ -125,7 +126,9 @@ public class ItemController : ApiController
     [ProducesResponseType(typeof(ProblemDetails), 404)]
     public async Task<IActionResult> UpdateAsync(Guid itemId, UpdateItemRequest updateItemRequest)
     {
-        if (!await _itemService.UserOwnsItemAsync(itemId, HttpContext.GetUserId()))
+        var userId = _identityService.GetUserId();
+
+        if (!await _itemService.UserOwnsItemAsync(itemId, userId))
         {
             return NotFound();
         }
@@ -155,7 +158,9 @@ public class ItemController : ApiController
     [ProducesResponseType(typeof(ProblemDetails), 404)]
     public async Task<IActionResult> DeleteAsync(Guid itemId)
     {
-        if (!await _itemService.UserOwnsItemAsync(itemId, HttpContext.GetUserId()))
+        var userId = _identityService.GetUserId();
+
+        if (!await _itemService.UserOwnsItemAsync(itemId, userId))
         {
             return NotFound();
         }

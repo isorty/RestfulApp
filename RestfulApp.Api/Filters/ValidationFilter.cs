@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using RestfulApp.Api.Extensions;
 using RestfulApp.Contracts.V1.Responses;
 
 namespace RestfulApp.Api.Filters;
@@ -9,7 +8,7 @@ public class ValidationFilter : IAsyncActionFilter
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        if (context.ModelState.IsInvalid())
+        if (!context.ModelState.IsValid)
         {
             var errorsInModelState = context.ModelState
                 .Where(x => x.Value.Errors.Count > 0)

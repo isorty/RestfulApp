@@ -7,27 +7,36 @@ namespace RestfulApp.Api.Services;
 
 public class UriService : IUriService
 {
-    private readonly string _baseUri;
+    private readonly IHttpContextAccessor _contextAccessor;
 
-    public UriService(string baseUri)
+    public UriService(IHttpContextAccessor contextAccessor)
     {
-        _baseUri = baseUri;
+        _contextAccessor = contextAccessor;
     }
 
     public Uri GetAllItemsUri(PaginationFilter paginationFilter = null)
     {
+        var baseUri = GetBaseUri();
+
         if (paginationFilter is null)
         {
-            return new Uri(_baseUri);
+            return new Uri(baseUri);
         }
 
-        var queryString = QueryHelpers.AddQueryString(_baseUri, nameof(paginationFilter.PageNumber).ToLowerCamelCase(), paginationFilter.PageNumber.ToString());
+        var queryString = QueryHelpers.AddQueryString(baseUri, nameof(paginationFilter.PageNumber).ToLowerCamelCase(), paginationFilter.PageNumber.ToString());
         queryString = QueryHelpers.AddQueryString(queryString, nameof(paginationFilter.PageSize).ToLowerCamelCase(), paginationFilter.PageSize.ToString());
 
         return new Uri(queryString);
     }
 
     public Uri GetItemUri(string itemId) =>
-        new Uri(_baseUri +
+        new Uri(GetBaseUri() +
             ApiRoutes.Items.Get.Replace(ApiRoutes.Items.ItemId, itemId));
+
+    private string GetBaseUri()
+    {
+        var request = _contextAccessor.HttpContext.Request;
+
+        return $"{request.Scheme}://{request.Host}{request.Path}";
+    }        
 }

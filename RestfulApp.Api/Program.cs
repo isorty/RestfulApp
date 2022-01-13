@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestfulApp.Api.Data;
 using RestfulApp.Api.Installers;
@@ -12,10 +13,10 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         var configuration = builder.Configuration;
+        builder.Services.Configure<ApiBehaviorOptions>(setup => setup.SuppressModelStateInvalidFilter = true);
 
         // Add services to the container.
         builder.Services.InstallServicesInAssembly<Program>(configuration);
-        builder.Services.AddAutoMapper(typeof(Program));
 
         var app = builder.Build();
 
