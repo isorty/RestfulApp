@@ -1,11 +1,9 @@
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestfulApp.Api.Data;
 using RestfulApp.Api.Installers;
+using RestfulApp.Api.Middlewares;
 using RestfulApp.Api.Settings;
-using RestfulApp.Contracts.HealthChecks;
-using System.Net.Mime;
 
 public class Program
 {
@@ -17,8 +15,15 @@ public class Program
 
         // Add services to the container.
         builder.Services.InstallServicesInAssembly<Program>(configuration);
-
+        
         var app = builder.Build();
+
+        // Bind configurations
+        var healthCheckSettings = new HealthCheckSettings();
+        configuration.Bind(nameof(HealthCheckSettings), healthCheckSettings);
+
+        var swaggerOptions = new SwaggerOptions();
+        configuration.Bind(nameof(SwaggerOptions), swaggerOptions);
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -30,37 +35,14 @@ public class Program
         else
         {
             app.UseHsts();
-        }
+        }        
 
-        app.UseHealthChecks("/health", new HealthCheckOptions()
-        {
-            ResponseWriter = async (context, report) =>
-            {
-                context.Response.ContentType = MediaTypeNames.Application.Json;
-                var response = new HealthCheckResponse
-                {
-                    Status = report.Status.ToString(),
-                    Checks = report.Entries.Select(r => new HealthCheck
-                    {
-                        Component = r.Key,
-                        Status = r.Value.Status.ToString(),
-                        Description = r.Value.Description
-                    }),
-                    Duration = report.TotalDuration
-                };
-
-                await context.Response.WriteAsync(response.ToString());
-            }
-        });
+        app.UseHealthChecks(healthCheckSettings);
 
         app.UseHttpsRedirection();
-        app.UseStaticFiles();
+        app.UseStaticFiles();        
 
-        var swaggerOptions = new SwaggerOptions();
-        configuration.Bind(nameof(SwaggerOptions), swaggerOptions);
-
-        app.UseSwagger(setup => setup.RouteTemplate = swaggerOptions.JsonRoute);
-        app.UseSwaggerUI(setup => setup.SwaggerEndpoint(swaggerOptions.UiEndpoint, swaggerOptions.Description));
+        app.UseSwaggerWithUI(swaggerOptions);
 
         app.UseRouting();
 
@@ -71,10 +53,6 @@ public class Program
         {
             endpoints.MapControllers();
         });
-
-        //app.MapControllerRoute(
-        //    name: "default",
-        //    pattern: "{controller=Home}/{action=Index}/{id?}");
 
         await app.RunAsync();
     }

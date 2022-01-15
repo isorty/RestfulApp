@@ -22,7 +22,7 @@ public class SecurityInstaller : IInstaller
             ValidateLifetime = true
         };
 
-        var jwtSettings = new JwtSettings(jwtOptions, tokenValidationParameters);
+        var jwtSettings = new JwtSecuritySettings(jwtOptions, tokenValidationParameters);
 
         services.AddSingleton(jwtSettings)
                 .AddAuthentication(setup =>

@@ -15,12 +15,12 @@ namespace RestfulApp.Api.Services;
 public class IdentityService : IIdentityService
 {
     private readonly UserManager<IdentityUser> _userManager;
-    private readonly JwtSettings _jwtSettings;
+    private readonly JwtSecuritySettings _jwtSettings;
     private readonly DataContext _dataContext;
     private readonly IMapper _mapper;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public IdentityService(UserManager<IdentityUser> userManager, JwtSettings jwtSettings, DataContext dataContext, IMapper mapper, IHttpContextAccessor httpContext)
+    public IdentityService(UserManager<IdentityUser> userManager, JwtSecuritySettings jwtSettings, DataContext dataContext, IMapper mapper, IHttpContextAccessor httpContext)
     {
         _userManager = userManager;
         _jwtSettings = jwtSettings;

@@ -2,17 +2,14 @@
 
 namespace RestfulApp.Api.Settings;
 
-public class JwtSettings
+public class JwtSecuritySettings
 {
     public JwtOptions JwtOptions { get; init; }
     public TokenValidationParameters TokenValidationParameters { get; init; }
 
-    public JwtSettings()
-    {
+    public JwtSecuritySettings() { }
 
-    }
-
-    public JwtSettings(JwtOptions jwtOptions, TokenValidationParameters tokenValidationParameters)
+    public JwtSecuritySettings(JwtOptions jwtOptions, TokenValidationParameters tokenValidationParameters)
     {
         JwtOptions = jwtOptions;
         TokenValidationParameters = tokenValidationParameters;
