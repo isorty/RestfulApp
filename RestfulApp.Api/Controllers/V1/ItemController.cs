@@ -91,11 +91,8 @@ public class ItemController : ApiController
     [ProducesResponseType(typeof(ValidationErrorResponse), 400)]
     public async Task<IActionResult> CreateAsync(CreateItemRequest itemRequest)
     {
-        var newItemId = Guid.NewGuid();
-        var user = HttpContext.User;
-
         var item = _mapper.Map<Item>(itemRequest);
-        item.Id = newItemId;
+        item.Id = ItemId.New();
         item.UserId = _identityService.GetUserId();
 
         var created = await _itemService.CreateItemAsync(item);
@@ -134,7 +131,7 @@ public class ItemController : ApiController
         }
 
         var item = _mapper.Map<Item>(updateItemRequest);
-        item.Id = itemId;
+        item.Id = new ItemId(itemId);
 
         var updatedItem = await _itemService.UpdateItemAsync(item);
 

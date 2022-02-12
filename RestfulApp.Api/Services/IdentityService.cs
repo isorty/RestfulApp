@@ -118,7 +118,7 @@ public class IdentityService : IIdentityService
     public string GetUserId() =>
         _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-    private List<string> CheckRefreshToken(RefreshToken refreshToken, string jti)
+    private static List<string> CheckRefreshToken(RefreshToken refreshToken, string jti)
     {
         var errors = new List<string>();
 
@@ -173,7 +173,7 @@ public class IdentityService : IIdentityService
         }
     }
 
-    private bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken) =>
+    private static bool IsJwtWithValidSecurityAlgorithm(SecurityToken validatedToken) =>
         validatedToken is JwtSecurityToken jwtSecurityToken &&
         jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase);
 
@@ -214,7 +214,7 @@ public class IdentityService : IIdentityService
         };
     }
 
-    private ClaimsIdentity CreateUserClaimsIdentity(IdentityUser user) =>
+    private static ClaimsIdentity CreateUserClaimsIdentity(IdentityUser user) =>
         new(new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),

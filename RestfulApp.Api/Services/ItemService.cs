@@ -59,7 +59,7 @@ public class ItemService : IItemService
 
     public async Task<Item> UpdateItemAsync(Item itemToUpdate)
     {
-        if (await _dataContext.Items.AsNoTracking().SingleOrDefaultAsync(item => item.Id == itemToUpdate.Id) is ItemDto itemDto)
+        if (await _dataContext.Items.AsNoTracking().SingleOrDefaultAsync(item => item.Id == itemToUpdate.Id.Value) is ItemDto itemDto)
         {
             itemDto = _mapper.Map(itemToUpdate, itemDto);
             _dataContext.Items.Update(itemDto);
@@ -89,7 +89,7 @@ public class ItemService : IItemService
                 (string.Equals(item.UserId, userId) || string.IsNullOrEmpty(item.UserId)));
     }
 
-    private IQueryable<ItemDto> AddFiltersOnQuery(GetAllItemsFilter filter, IQueryable<ItemDto> queryable)
+    private static IQueryable<ItemDto> AddFiltersOnQuery(GetAllItemsFilter filter, IQueryable<ItemDto> queryable)
     {
         if (!string.IsNullOrEmpty(filter?.Name))
         {
