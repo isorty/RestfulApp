@@ -1,6 +1,8 @@
-﻿namespace RestfulApp.Contracts.V1.Requests;
+﻿using RestfulApp.Contracts.Interfaces;
 
-public class UserLoginRequest
+namespace RestfulApp.Contracts.V1.Requests;
+
+public class UserLoginRequest : IRequest
 {
     public string Email { get; set; }
     public string Password { get; set; }

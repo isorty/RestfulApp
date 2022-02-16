@@ -1,12 +1,16 @@
 ﻿using RestfulApp.Api.Domain;
 using RestfulApp.Api.Services;
+using RestfulApp.Contracts.Interfaces;
 using RestfulApp.Contracts.V1.Responses;
 
 namespace RestfulApp.Api.Helpers;
 
 public static class PaginationHelpers
 {
-    public static PaginatedResponse<TResponse> CreatePaginatedResponse<TResponse>(IUriService uriService, PaginationFilter paginationFiler, List<TResponse> responses)
+    public static PaginatedResponse<TResponse> CreatePaginatedResponse<TResponse>(
+        IUriService uriService, 
+        PaginationFilter paginationFiler, 
+        List<TResponse> responses) where TResponse : IResponse
     {
         var nextPage = paginationFiler.PageNumber >= 1 && responses.Count == paginationFiler.PageSize ?
             uriService.GetAllItemsUri(new PaginationFilter

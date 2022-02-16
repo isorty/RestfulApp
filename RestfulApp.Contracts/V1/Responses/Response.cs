@@ -1,6 +1,8 @@
-﻿namespace RestfulApp.Contracts.V1.Responses;
+﻿using RestfulApp.Contracts.Interfaces;
 
-public class Response<TResponse>
+namespace RestfulApp.Contracts.V1.Responses;
+
+public class Response<TResponse> where TResponse : IResponse
 {
     public TResponse Data { get; set; }
 

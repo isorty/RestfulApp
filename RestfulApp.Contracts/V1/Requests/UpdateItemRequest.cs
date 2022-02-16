@@ -1,6 +1,8 @@
-﻿namespace RestfulApp.Contracts.V1.Requests;
+﻿using RestfulApp.Contracts.Interfaces;
 
-public class UpdateItemRequest
+namespace RestfulApp.Contracts.V1.Requests;
+
+public class UpdateItemRequest : IRequest
 {
     public string Name { get; set; }
 }

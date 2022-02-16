@@ -1,6 +1,8 @@
-﻿namespace RestfulApp.Contracts.V1.Requests;
+﻿using RestfulApp.Contracts.Interfaces;
 
-public class CreateItemRequest
+namespace RestfulApp.Contracts.V1.Requests;
+
+public class CreateItemRequest : IRequest
 {
     public string Name { get; set; }
 }

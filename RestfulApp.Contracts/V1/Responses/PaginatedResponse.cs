@@ -1,6 +1,8 @@
-﻿namespace RestfulApp.Contracts.V1.Responses;
+﻿using RestfulApp.Contracts.Interfaces;
 
-public class PaginatedResponse<TResponse>
+namespace RestfulApp.Contracts.V1.Responses;
+
+public class PaginatedResponse<TResponse> where TResponse : IResponse
 {
     public IEnumerable<TResponse> Data { get; set; }
     public int? PageNumber { get; set; }

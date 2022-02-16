@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using RestfulApp.Api.Controllers;
 using RestfulApp.Api.Services;
 using RestfulApp.Contracts.V1;
 using RestfulApp.Contracts.V1.Requests;
