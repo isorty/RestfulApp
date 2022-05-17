@@ -11,6 +11,8 @@ using RestfulApp.Contracts.V1.Requests.Queries;
 using RestfulApp.Contracts.V1.Responses;
 using RestfulApp.Api.Filters;
 using System.Net.Mime;
+using RestfulApp.Core.Objects;
+using RestfulApp.Core.ValueObjects;
 
 namespace RestfulApp.Api.Controllers.V1;
 
@@ -71,7 +73,7 @@ public class ItemController : ApiController
     [ProducesResponseType(typeof(ProblemDetails), 404)]
     public async Task<IActionResult> GetAsync(Guid itemId)
     {
-        var item = await _itemService.GetItemByIdAsync(itemId);
+        var item = await _itemService.GetItemAsync(itemId);
         var itemResponse = _mapper.Map<ItemResponse>(item);
         var response = new Response<ItemResponse>(itemResponse);
 

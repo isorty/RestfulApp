@@ -35,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\RestfulApp.Core\RestfulApp.Core.csproj" />
     <ProjectReference Include="..\RestfulApp.Contracts\RestfulApp.Contracts.csproj" />
   </ItemGroup>
 

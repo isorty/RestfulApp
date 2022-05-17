@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using RestfulApp.Api.Data;
 using RestfulApp.Api.Data.Models;
 using RestfulApp.Api.Domain;
+using RestfulApp.Core.Objects;
 
 namespace RestfulApp.Api.Services;
 
@@ -39,7 +40,7 @@ public class ItemService : IItemService
         return items;
     }
 
-    public async Task<Item> GetItemByIdAsync(Guid itemId)
+    public async Task<Item> GetItemAsync(Guid itemId)
     {
         var itemDto = await _dataContext.Items
             .AsNoTracking()

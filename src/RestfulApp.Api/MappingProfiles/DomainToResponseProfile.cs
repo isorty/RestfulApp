@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using RestfulApp.Api.Domain;
 using RestfulApp.Contracts.V1.Responses;
+using RestfulApp.Core.Objects;
 
 namespace RestfulApp.Api.MappingProfiles;
 
