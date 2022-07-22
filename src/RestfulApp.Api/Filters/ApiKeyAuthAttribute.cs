@@ -6,19 +6,32 @@ namespace RestfulApp.Api.Filters;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
 {
-    private const string ApiKeyHeaderName = "X-API-KEY";
-    private bool _isEnabled = true;
+    private string ApiKeyHeaderName = "X-API-KEY";
+    private bool IsEnabled = true;
 
     public ApiKeyAuthAttribute() { }
 
-    public ApiKeyAuthAttribute(bool isEnabled)
+    public ApiKeyAuthAttribute(string apiKeyHeaderName)
     {
-        _isEnabled = isEnabled;
+        ApiKeyHeaderName = apiKeyHeaderName;
     }
 
-    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    public ApiKeyAuthAttribute(bool isEnabled)
     {
-        if (_isEnabled && !IsAuthorized(context))
+        IsEnabled = isEnabled;
+    }
+
+    public ApiKeyAuthAttribute(string apiKeyHeaderName, bool isEnabled)
+    {
+        ApiKeyHeaderName = apiKeyHeaderName;
+        IsEnabled = isEnabled;
+    }
+
+    public async Task OnActionExecutionAsync(
+        ActionExecutingContext context, 
+        ActionExecutionDelegate next)
+    {
+        if (IsEnabled && !IsAuthorized(context))
         {
             context.Result = new UnauthorizedResult();
             return;
