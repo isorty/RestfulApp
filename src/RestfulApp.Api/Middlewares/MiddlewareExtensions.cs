@@ -22,7 +22,6 @@ public static class MiddlewareExtensions
 
     /// <summary>
     /// Register the Swagger and SwaggerUI middlewares with optional setup action for DI-injected options.
-    /// 
     /// </summary>
     public static IApplicationBuilder UseSwaggerWithUI(this IApplicationBuilder builder, SwaggerOptions options)
     {
