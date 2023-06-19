@@ -5,14 +5,14 @@ using Microsoft.AspNetCore.Mvc;
 using RestfulApp.Api.Domain;
 using RestfulApp.Api.Helpers;
 using RestfulApp.Api.Services;
-using RestfulApp.Contracts.V1;
-using RestfulApp.Contracts.V1.Requests;
-using RestfulApp.Contracts.V1.Requests.Queries;
-using RestfulApp.Contracts.V1.Responses;
 using RestfulApp.Api.Filters;
 using System.Net.Mime;
 using RestfulApp.Core.Objects;
 using RestfulApp.Core.ValueObjects;
+using RestfulApp.Api.Contracts.V1;
+using RestfulApp.Api.Contracts.V1.Responses;
+using RestfulApp.Api.Contracts.V1.Requests.Queries;
+using RestfulApp.Api.Contracts.V1.Requests;
 
 namespace RestfulApp.Api.Controllers.V1;
 
@@ -58,7 +58,8 @@ public class ItemController : ApiController
             return Ok(new PaginatedResponse<ItemResponse>(itemResponses));
         }
 
-        var paginatedResponse = PaginationHelpers.CreatePaginatedResponse(_uriService, pagination, itemResponses);
+        var paginatedResponse = PaginationHelpers
+            .CreatePaginatedResponse(_uriService, pagination, itemResponses);
 
         return Ok(paginatedResponse);
     }
@@ -106,8 +107,7 @@ public class ItemController : ApiController
 
         var locationUri = _uriService.GetItemUri(item.Id.ToString());
 
-        var itemResponse = _mapper.Map<ItemResponse>(item);
-        var response = new Response<ItemResponse>(itemResponse);
+        Response<ItemResponse> response = _mapper.Map<ItemResponse>(item);
 
         return Created(locationUri, response);
     }
@@ -142,9 +142,9 @@ public class ItemController : ApiController
             return NotFound();
         }
 
-        var updatedItemRespone = _mapper.Map<ItemResponse>(updatedItem);
+        var updatedItemResponse = _mapper.Map<ItemResponse>(updatedItem);
 
-        return Ok(new Response<ItemResponse> { Data = updatedItemRespone });
+        return Ok(new Response<ItemResponse> { Data = updatedItemResponse });
     }
 
     /// <summary>

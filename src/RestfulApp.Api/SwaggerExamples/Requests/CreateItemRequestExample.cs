@@ -1,4 +1,4 @@
-﻿using RestfulApp.Contracts.V1.Requests;
+﻿using RestfulApp.Api.Contracts.V1.Requests;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace RestfulApp.Api.SwaggerExamples.Requests;

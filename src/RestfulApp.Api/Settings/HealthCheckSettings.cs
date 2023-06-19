@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using RestfulApp.Contracts.HealthChecks;
+using RestfulApp.Api.Contracts.HealthChecks;
 using System.Net.Mime;
 
 namespace RestfulApp.Api.Settings;

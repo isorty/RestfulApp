@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using RestfulApp.Contracts.V1.Responses;
+using RestfulApp.Api.Contracts.V1.Responses;
 using RestfulApp.Core.Objects;
 
 namespace RestfulApp.Api.MappingProfiles;

@@ -2,7 +2,7 @@
 
 namespace RestfulApp.Core.Objects;
 
-public class Item
+public sealed class Item
 {
     public ItemId Id { get; set; }
     public string Name { get; set; }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
+using RestfulApp.Api.Contracts.V1;
 using RestfulApp.Api.Domain;
 using RestfulApp.Api.Extensions;
-using RestfulApp.Contracts.V1;
 
 namespace RestfulApp.Api.Services;
 

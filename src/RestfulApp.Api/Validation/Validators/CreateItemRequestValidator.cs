@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using RestfulApp.Contracts.V1.Requests;
+using RestfulApp.Api.Contracts.V1.Requests;
 
 namespace RestfulApp.Api.Validation.Validators;
 

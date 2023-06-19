@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RestfulApp.Api.Contracts.V1;
+using RestfulApp.Api.Contracts.V1.Requests;
+using RestfulApp.Api.Contracts.V1.Responses;
 using RestfulApp.Api.Services;
-using RestfulApp.Contracts.V1;
-using RestfulApp.Contracts.V1.Requests;
-using RestfulApp.Contracts.V1.Responses;
 using System.Net.Mime;
 
 namespace RestfulApp.Api.Controllers.V1;
@@ -18,7 +18,7 @@ public class IdentityController : ApiController
     }
 
     /// <summary>
-    /// Logins a user by its email and passowrd.
+    /// Logins a user by its email and password.
     /// </summary>
     /// <response code="200">Login succeed.</response>
     /// <response code="400">Login failed.</response>

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using RestfulApp.Contracts.V1.Responses;
+using RestfulApp.Api.Contracts.V1.Responses;
 
 namespace RestfulApp.Api.Filters;
 

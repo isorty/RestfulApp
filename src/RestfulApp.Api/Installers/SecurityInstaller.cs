@@ -19,7 +19,8 @@ public class SecurityInstaller : IInstaller
             ValidateIssuer = false,
             ValidateAudience = false,
             RequireExpirationTime = false,
-            ValidateLifetime = true
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(10)
         };
 
         var jwtSettings = new JwtSecuritySettings(jwtOptions, tokenValidationParameters);

@@ -5,6 +5,8 @@ using RestfulApp.Api.Installers;
 using RestfulApp.Api.Middlewares;
 using RestfulApp.Api.Settings;
 
+namespace RestfulApp.Api;
+
 public class Program
 {
     public static async Task Main(string[] args)
@@ -15,7 +17,7 @@ public class Program
 
         // Add services to the container.
         builder.Services.InstallServicesInAssembly<Program>(configuration);
-        
+
         var app = builder.Build();
 
         // Bind configurations
@@ -23,7 +25,7 @@ public class Program
         configuration.Bind(nameof(HealthCheckSettings), healthCheckSettings);
 
         var swaggerOptions = new SwaggerOptions();
-        configuration.Bind(nameof(SwaggerOptions), swaggerOptions);
+        configuration.Bind(nameof(SwaggerOptions), swaggerOptions);        
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())

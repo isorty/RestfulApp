@@ -1,7 +1,7 @@
-﻿using RestfulApp.Api.Domain;
+﻿using RestfulApp.Api.Contracts.Interfaces;
+using RestfulApp.Api.Contracts.V1.Responses;
+using RestfulApp.Api.Domain;
 using RestfulApp.Api.Services;
-using RestfulApp.Contracts.Interfaces;
-using RestfulApp.Contracts.V1.Responses;
 
 namespace RestfulApp.Api.Helpers;
 
